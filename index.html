@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora KM</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#667eea">
+    
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --success-color: #48bb78;
+            --danger-color: #e53e3e;
+            --background-color: #f7fafc;
+            --card-background-color: rgba(255, 255, 255, 0.95);
+            --text-primary-color: #2d3748;
+            --text-secondary-color: #718096;
+            --border-color: #e2e8f0;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --shadow-color-strong: rgba(102, 126, 234, 0.3);
+            --header-gradient: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #7f9cf5;
+            --secondary-color: #9f7aea;
+            --success-color: #68d391;
+            --danger-color: #fc8181;
+            --background-color: #1a202c;
+            --card-background-color: #2d3748;
+            --text-primary-color: #edf2f7;
+            --text-secondary-color: #a0aec0;
+            --border-color: #4a5568;
+            --shadow-color: rgba(0, 0, 0, 0.4);
+            --shadow-color-strong: rgba(127, 156, 245, 0.3);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-primary-color);
+            transition: background-color 0.3s, color 0.3s;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 420px;
+            margin: 0 auto;
+        }
+
+        .main-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background: var(--card-background-color);
+            border-radius: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px var(--shadow-color);
+            border: 1px solid var(--border-color);
+        }
+
+        .main-header .header-logo,
+        .main-header .header-controls {
+            flex: 1; 
+        }
+        
+        .main-header .header-logo {
+            display: flex;
+        }
+
+        .main-header .header-logo svg {
+            width: 28px;
+            height: 28px;
+            color: var(--primary-color);
+        }
+
+        .main-header h1 {
+            flex: 2; 
+            text-align: center;
+            font-size: 22px;
+            color: var(--text-primary-color);
+            margin: 0;
+        }
+
+        .main-header .header-controls { 
+            display: flex; 
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .icon-btn {
+            background: none;
+            border: 2px solid var(--border-color);
+            color: var(--text-secondary-color);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+        .icon-btn:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            transform: translateY(-2px);
+        }
+        .icon-btn svg { width: 20px; height: 20px; }
+        
+        .card {
+            background: var(--card-background-color);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px var(--shadow-color);
+            margin-bottom: 20px;
+            border: 1px solid var(--border-color);
+        }
+
+        .form-group { margin-bottom: 20px; }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--text-primary-color);
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid var(--border-color);
+            background-color: var(--background-color);
+            color: var(--text-primary-color);
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px var(--shadow-color-strong);
+        }
+        
+        .calculate-btn {
+            width: 100%;
+            padding: 18px;
+            background: var(--header-gradient);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+        .calculate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px var(--shadow-color-strong);
+        }
+
+        .error-message {
+            color: var(--danger-color);
+            font-size: 12px;
+            margin-top: 5px;
+            height: 15px;
+        }
+
+        .result {
+            background: linear-gradient(135deg, var(--success-color), #38a169);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100px;
+        }
+        .result.active {
+            display: flex;
+        }
+        .result h3 { 
+            font-size: 28px; 
+            margin: 0 0 8px 0;
+        }
+        .result p {
+            margin: 0;
+            opacity: 0.9;
+        }
+
+        .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .stat-card {
+            background: var(--card-background-color);
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid var(--border-color);
+        }
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-secondary-color);
+            margin-top: 5px;
+        }
+        
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .history-header h3 { color: var(--text-primary-color); font-size: 18px; }
+
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid var(--border-color);
+            transition: background 0.2s ease;
+        }
+        .history-item:last-child { border-bottom: none; }
+        .history-details { flex-grow: 1; }
+        .history-main-info { font-weight: 600; }
+        .history-date { font-size: 12px; color: var(--text-secondary-color); margin-top: 4px; }
+        .history-meta { text-align: right; }
+        .history-value { color: var(--success-color); font-weight: 600; }
+        .history-km { font-size: 12px; color: var(--text-secondary-color); }
+        .delete-item-btn { margin-left: 15px; }
+        
+        .empty-history { text-align: center; color: var(--text-secondary-color); padding: 40px 20px; }
+        .empty-history svg { width: 50px; height: 50px; margin-bottom: 15px; opacity: 0.5; }
+
+    </style>
+</head>
+
+<body>
+    <svg width="0" height="0" style="display: none;">
+        <symbol id="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></symbol>
+        <symbol id="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></symbol>
+        <symbol id="icon-car" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 16.5V18a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-1.5m10 0H4m10 0a2.5 2.5 0 0 0 2.5-2.5V12a2.5 2.5 0 0 0-2.5-2.5H4A2.5 2.5 0 0 0 1.5 12v2a2.5 2.5 0 0 0 2.5 2.5m10 0a2.5 2.5 0 0 1-2.5-2.5V12a2.5 2.5 0 0 1 2.5-2.5h.01"></path><circle cx="5.5" cy="16.5" r="1.5"></circle><circle cx="18.5" cy="16.5" r="1.5"></circle></symbol>
+        <symbol id="icon-download" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></symbol>
+        <symbol id="icon-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></symbol>
+        <symbol id="icon-file-text" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></symbol>
+    </svg>
+
+    <div class="container">
+        <header class="main-header">
+            <div class="header-logo">
+                <svg><use href="#icon-car"></use></svg>
+            </div>
+            <h1>Calculadora KM</h1>
+            <div class="header-controls">
+                <button class="icon-btn" id="theme-toggle" title="Alternar Tema">
+                    <svg class="icon-sun"><use href="#icon-sun"></use></svg>
+                    <svg class="icon-moon" style="display:none;"><use href="#icon-moon"></use></svg>
+                </button>
+            </div>
+        </header>
+
+        <div class="card">
+            <form id="kmForm">
+                <div class="form-group">
+                    <label for="startKm">KM Inicial:</label>
+                    <input type="number" id="startKm" placeholder="Ex: 10250" step="0.1" min="0">
+                    <div class="error-message" id="startKm-error"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="endKm">KM Final:</label>
+                    <input type="number" id="endKm" placeholder="Ex: 10350" step="0.1" min="0">
+                    <div class="error-message" id="endKm-error"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="pricePerKm">Preço por KM (R$):</label>
+                    <input type="number" id="pricePerKm" placeholder="Ex: 1.40" step="0.01" min="0.01" required>
+                    <div class="error-message" id="pricePerKm-error"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="tripDate">Data e Horário:</label>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="date" id="tripDate" required>
+                        <input type="time" id="tripTime" required>
+                    </div>
+                </div>
+
+                <button type="submit" class="calculate-btn" id="calculateBtn">Calcular Valor</button>
+            </form>
+        </div>
+
+        <div class="result" id="result"></div>
+        
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-value" id="totalKm">0</div>
+                <div class="stat-label">KM Total</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="totalValue">R$ 0,00</div>
+                <div class="stat-label">Valor Total</div>
+            </div>
+        </div>
+
+        <div class="card" style="margin-top: 20px;">
+            <div class="history-header">
+                <h3>Histórico</h3>
+                <button class="icon-btn" id="export-csv-btn" title="Exportar para CSV">
+                    <svg><use href="#icon-download"></use></svg>
+                </button>
+            </div>
+            <div id="historyList"></div>
+        </div>
+    </div>
+    
+    <script>
+    class KmCalculator {
+        constructor() {
+            this.dom = {
+                themeToggle: document.getElementById('theme-toggle'),
+                kmForm: document.getElementById('kmForm'),
+                startKm: document.getElementById('startKm'),
+                endKm: document.getElementById('endKm'),
+                pricePerKm: document.getElementById('pricePerKm'),
+                startKmError: document.getElementById('startKm-error'),
+                endKmError: document.getElementById('endKm-error'),
+                pricePerKmError: document.getElementById('pricePerKm-error'),
+                result: document.getElementById('result'),
+                totalKm: document.getElementById('totalKm'),
+                totalValue: document.getElementById('totalValue'),
+                historyList: document.getElementById('historyList'),
+                exportCsvBtn: document.getElementById('export-csv-btn'),
+            };
+
+            this.theme = this.loadTheme();
+            this.history = this.loadHistory();
+
+            this.init();
+        }
+
+        init() {
+            this.applyTheme();
+            this.setCurrentDateTime();
+            this.render();
+            this.setupEventListeners();
+        }
+
+        setupEventListeners() {
+            this.dom.themeToggle.addEventListener('click', () => this.toggleTheme());
+            this.dom.kmForm.addEventListener('submit', (e) => this.handleFormSubmit(e));
+            
+            this.dom.historyList.addEventListener('click', (e) => {
+                const target = e.target.closest('.delete-item-btn');
+                if (target) this.deleteHistoryItem(target.dataset.id);
+            });
+            
+            this.dom.exportCsvBtn.addEventListener('click', () => this.exportToCSV());
+            
+            ['startKm', 'endKm', 'pricePerKm'].forEach(id => {
+                document.getElementById(id).addEventListener('input', () => this.validateForm(false));
+            });
+        }
+
+        loadTheme() {
+            return localStorage.getItem('kmCalculatorTheme') || 'light';
+        }
+
+        saveTheme() {
+            localStorage.setItem('kmCalculatorTheme', this.theme);
+        }
+        
+        loadHistory() {
+            const saved = localStorage.getItem('kmCalculatorHistory');
+            return saved ? JSON.parse(saved) : [];
+        }
+
+        saveHistory() {
+            localStorage.setItem('kmCalculatorHistory', JSON.stringify(this.history));
+            this.render();
+        }
+
+        addToHistory(entry) {
+            this.history.unshift(entry);
+            this.saveHistory();
+        }
+
+        deleteHistoryItem(id) {
+            if (!confirm('Tem certeza de que deseja excluir este registro?')) return;
+            this.history = this.history.filter(item => item.id.toString() !== id);
+            this.saveHistory();
+        }
+
+        render() {
+            this.renderHistory();
+            this.updateStats();
+        }
+        
+        renderHistory() {
+            if (this.history.length === 0) {
+                this.dom.historyList.innerHTML = `
+                    <div class="empty-history">
+                        <svg><use href="#icon-file-text"></use></svg>
+                        <p>Nenhum registro ainda.<br>Comece adicionando uma nova viagem!</p>
+                    </div>`;
+                return;
+            }
+
+            this.dom.historyList.innerHTML = this.history.map(item => `
+                <div class="history-item">
+                    <div class="history-details">
+                        <div class="history-main-info">${item.km.toFixed(1)} km a ${this.formatCurrency(item.pricePerKm)}/km</div>
+                        <div class="history-date">${this.formatDateTime(item.date)}</div>
+                    </div>
+                    <div class="history-meta">
+                        <div class="history-value">${this.formatCurrency(item.value)}</div>
+                        <div class="history-km">${item.km.toFixed(1)} km</div>
+                    </div>
+                    <button class="icon-btn delete-item-btn" data-id="${item.id}" title="Excluir Registro">
+                        <svg><use href="#icon-trash"></use></svg>
+                    </button>
+                </div>`).join('');
+        }
+
+        updateStats() {
+            const totalKm = this.history.reduce((sum, item) => sum + item.km, 0);
+            const totalValue = this.history.reduce((sum, item) => sum + item.value, 0);
+            this.dom.totalKm.textContent = totalKm.toFixed(1);
+            this.dom.totalValue.textContent = this.formatCurrency(totalValue);
+        }
+
+        handleFormSubmit(e) {
+            e.preventDefault();
+            if (!this.validateForm(true)) return;
+
+            const startKm = parseFloat(this.dom.startKm.value);
+            const endKm = parseFloat(this.dom.endKm.value);
+            const pricePerKm = parseFloat(this.dom.pricePerKm.value);
+            
+            const km = endKm - startKm;
+            const value = km * pricePerKm;
+
+            this.addToHistory({
+                id: Date.now(),
+                date: `${document.getElementById('tripDate').value}T${document.getElementById('tripTime').value}`,
+                startKm,
+                endKm,
+                km,
+                value,
+                pricePerKm 
+            });
+            
+            this.showResult(km, value, pricePerKm);
+            this.dom.kmForm.reset();
+            this.setCurrentDateTime();
+        }
+
+        validateForm(showAllErrors) {
+            let isValid = true;
+            const startKm = parseFloat(this.dom.startKm.value);
+            const endKm = parseFloat(this.dom.endKm.value);
+            const pricePerKm = parseFloat(this.dom.pricePerKm.value);
+
+            this.dom.startKmError.textContent = '';
+            this.dom.endKmError.textContent = '';
+            this.dom.pricePerKmError.textContent = '';
+
+            if (showAllErrors && (isNaN(startKm) || startKm < 0)) {
+                this.dom.startKmError.textContent = 'Valor inválido.';
+                isValid = false;
+            }
+
+            if (showAllErrors && (isNaN(endKm) || endKm <= 0)) {
+                this.dom.endKmError.textContent = 'Valor inválido.';
+                isValid = false;
+            }
+            
+            if (!isNaN(startKm) && !isNaN(endKm) && endKm <= startKm) {
+                this.dom.endKmError.textContent = 'Deve ser maior que o KM inicial.';
+                isValid = false;
+            }
+
+            if (showAllErrors && (isNaN(pricePerKm) || pricePerKm <= 0)) {
+                this.dom.pricePerKmError.textContent = 'Preço inválido.';
+                isValid = false;
+            }
+            
+            return isValid;
+        }
+        
+        showResult(km, value, pricePerKm) {
+            this.dom.result.innerHTML = `
+                <h3>${this.formatCurrency(value)}</h3>
+                <p>${km.toFixed(1)} km × ${this.formatCurrency(pricePerKm)}/km</p>`;
+            this.dom.result.classList.add('active');
+            setTimeout(() => { this.dom.result.classList.remove('active') }, 5000);
+        }
+
+        applyTheme() {
+            document.body.dataset.theme = this.theme;
+            const sunIcon = this.dom.themeToggle.querySelector('.icon-sun');
+            const moonIcon = this.dom.themeToggle.querySelector('.icon-moon');
+            if (this.theme === 'dark') {
+                sunIcon.style.display = 'none';
+                moonIcon.style.display = 'block';
+            } else {
+                sunIcon.style.display = 'block';
+                moonIcon.style.display = 'none';
+            }
+        }
+        
+        toggleTheme() {
+            this.theme = this.theme === 'light' ? 'dark' : 'light';
+            this.saveTheme();
+            this.applyTheme();
+        }
+        
+        exportToCSV() {
+            if (this.history.length === 0) {
+                alert("Não há dados para exportar.");
+                return;
+            }
+            const headers = ['Data', 'KM Inicial', 'KM Final', 'Distancia (KM)', 'Preco por KM (R$)', 'Valor Total (R$)'];
+            const rows = this.history.map(item => [
+                    this.formatDateTime(item.date, true),
+                    item.startKm,
+                    item.endKm,
+                    item.km.toFixed(2),
+                    item.pricePerKm.toFixed(2),
+                    item.value.toFixed(2)
+                ].join(',')
+            );
+            const csvContent = "data:text/csv;charset=utf-8," + [headers.join(','), ...rows].join("\n");
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `historico_km_${new Date().toISOString().slice(0,10)}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+        
+        setCurrentDateTime() {
+            const now = new Date();
+            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+            document.getElementById('tripDate').value = now.toISOString().slice(0,10);
+            document.getElementById('tripTime').value = now.toISOString().slice(11,16);
+        }
+
+        formatCurrency(value) {
+            return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
+        }
+
+        formatDateTime(isoString, forCSV = false) {
+            const date = new Date(isoString);
+            const options = { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' };
+            if (forCSV) return date.toLocaleString('pt-BR', { ...options, hour12: false });
+            return date.toLocaleString('pt-br', options);
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        new KmCalculator();
+    });
+    </script>
+</body>
+</html>
